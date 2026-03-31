@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { guardCronRoute, isDemoMode } from "@/lib/auth/guard";
 import { supabaseAdmin } from "@/lib/supabase";
 import { flowAgent } from "@/lib/ai/agent";
-
-const WORKSPACE_ID = "a1d9788c-55cf-4eb0-a3eb-1697ec9763de";
+import { WORKSPACE_ID } from "@/lib/constants";
 
 /**
  * Cron: Every 10 minutes — poll agent_comms for tasks sent to FlowBot.

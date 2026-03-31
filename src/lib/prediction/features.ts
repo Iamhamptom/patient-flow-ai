@@ -34,13 +34,25 @@ export async function extractFeatures(
   booking: BookingRow,
   practiceId: string
 ): Promise<PredictionFeatures> {
-  // Find patient by phone or email match
-  const { data: patients } = await supabaseAdmin
+  // Find patient by phone match (safe — no string interpolation in filter)
+  const { data: patientsByPhone } = await supabaseAdmin
     .from(hoTables.patients)
     .select("id, name, phone, medical_aid, last_visit")
     .eq("practice_id", practiceId)
-    .or(`phone.eq.${booking.patient_phone},email.eq.${booking.patient_email}`)
+    .eq("phone", booking.patient_phone)
     .limit(1);
+
+  // Fallback: try email if no phone match
+  let patients = patientsByPhone;
+  if (!patients?.length && booking.patient_email) {
+    const { data: patientsByEmail } = await supabaseAdmin
+      .from(hoTables.patients)
+      .select("id, name, phone, medical_aid, last_visit")
+      .eq("practice_id", practiceId)
+      .eq("email", booking.patient_email)
+      .limit(1);
+    patients = patientsByEmail;
+  }
 
   const patient: PatientRow | null = patients?.[0] ?? null;
 

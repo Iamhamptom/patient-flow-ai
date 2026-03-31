@@ -10,6 +10,7 @@ import {
 import { getFlowBoardState } from "@/lib/flow/board-state";
 import { generateDayForecast } from "@/lib/flow/capacity-forecast";
 import { analyzeDoctorPatterns } from "@/lib/schedule/pattern-analyzer";
+import { WORKSPACE_ID } from "@/lib/constants";
 
 /**
  * Patient Flow AI Agent — "FlowBot"
@@ -339,7 +340,6 @@ When asked to do something, use your tools to gather data, analyze it, and retur
           .describe("Target agent (steinberg, openclaw, chairman, all)"),
       }),
       execute: async ({ msgType, subject, body, payload, priority, targetAgent }) => {
-        const WORKSPACE_ID = "a1d9788c-55cf-4eb0-a3eb-1697ec9763de";
         const { data, error } = await supabaseAdmin
           .from("agent_comms")
           .insert({
