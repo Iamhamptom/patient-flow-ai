@@ -75,7 +75,7 @@ When asked to do something, use your tools to gather data, analyze it, and retur
           .from(hoTables.bookings)
           .select("*")
           .eq("id", bookingId)
-          .eq("practiceId", practiceId)
+          .eq("practice_id", practiceId)
           .single();
 
         if (!booking) return { error: "Booking not found" };
@@ -86,8 +86,8 @@ When asked to do something, use your tools to gather data, analyze it, and retur
           const pred = await scoreWithGemini(
             bookingId,
             practiceId,
-            booking.patientId ?? null,
-            booking.scheduledAt,
+            booking.patient_id ?? null,
+            booking.scheduled_at,
             features
           );
           return pred;
@@ -97,8 +97,8 @@ When asked to do something, use your tools to gather data, analyze it, and retur
         return scoreWithStatisticalModel(
           bookingId,
           practiceId,
-          booking.patientId ?? null,
-          booking.scheduledAt,
+          booking.patient_id ?? null,
+          booking.scheduled_at,
           features,
           weights
         );
@@ -125,7 +125,7 @@ When asked to do something, use your tools to gather data, analyze it, and retur
               b.id,
               practiceId,
               null,
-              b.scheduledAt,
+              b.scheduled_at,
               features,
               weights
             );
@@ -300,13 +300,13 @@ When asked to do something, use your tools to gather data, analyze it, and retur
           count: bookings.length,
           bookings: bookings.map((b) => ({
             id: b.id,
-            patientName: b.patientName,
+            patientName: b.patient_name,
             service: b.service,
-            scheduledAt: b.scheduledAt,
+            scheduledAt: b.scheduled_at,
             status: b.status,
             source: b.source,
-            depositPaid: b.depositPaid,
-            reminderSent: !!b.reminderSentAt,
+            depositPaid: b.deposit_paid,
+            reminderSent: !!b.reminder_sent_at,
           })),
         };
       },

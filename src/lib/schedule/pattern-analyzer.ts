@@ -1,19 +1,11 @@
 import { supabaseAdmin, hoTables, tables } from "@/lib/supabase";
 import type { DoctorPattern } from "@/lib/prediction/types";
 
-interface CompletedBooking {
-  id: string;
-  service: string;
-  scheduledAt: string;
-  source: string;
-  practiceId: string;
-}
-
 interface CheckInWithBooking {
-  patientName: string;
-  arrivedAt: string;
-  seenAt: string;
-  leftAt: string;
+  patient_name: string;
+  arrived_at: string;
+  seen_at: string;
+  left_at: string;
   status: string;
 }
 
@@ -28,12 +20,12 @@ export async function analyzeDoctorPatterns(
   // Get completed check-ins with timing data
   const { data: checkIns, error } = await supabaseAdmin
     .from(hoTables.checkIns)
-    .select("patientName, arrivedAt, seenAt, leftAt, status")
-    .eq("practiceId", practiceId)
+    .select("patient_name, arrived_at, seen_at, left_at, status")
+    .eq("practice_id", practiceId)
     .eq("status", "checked_out")
-    .not("seenAt", "is", null)
-    .not("leftAt", "is", null)
-    .order("arrivedAt", { ascending: false })
+    .not("seen_at", "is", null)
+    .not("left_at", "is", null)
+    .order("arrived_at", { ascending: false })
     .limit(500);
 
   if (error || !checkIns?.length) return [];
@@ -41,12 +33,12 @@ export async function analyzeDoctorPatterns(
   // Calculate consultation durations
   const durations = (checkIns as CheckInWithBooking[])
     .map((c) => {
-      const seen = new Date(c.seenAt).getTime();
-      const left = new Date(c.leftAt).getTime();
+      const seen = new Date(c.seen_at).getTime();
+      const left = new Date(c.left_at).getTime();
       const minutes = (left - seen) / 60000;
-      const hour = new Date(c.seenAt).getHours();
-      const day = new Date(c.seenAt).getDay();
-      return { minutes, hour, day, patientName: c.patientName };
+      const hour = new Date(c.seen_at).getHours();
+      const day = new Date(c.seen_at).getDay();
+      return { minutes, hour, day, patientName: c.patient_name };
     })
     .filter((d) => d.minutes > 0 && d.minutes < 180); // Sanity: 0-3 hours
 

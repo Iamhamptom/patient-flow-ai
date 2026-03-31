@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     .from(hoTables.bookings)
     .select("*")
     .eq("id", bookingId)
-    .eq("practiceId", practiceId)
+    .eq("practice_id", practiceId)
     .single();
 
   if (error || !booking) {
@@ -50,8 +50,8 @@ export async function POST(req: NextRequest) {
     prediction = await scoreWithGemini(
       bookingId,
       practiceId,
-      booking.patientId ?? null,
-      booking.scheduledAt,
+      booking.patient_id ?? null,
+      booking.scheduled_at,
       features
     );
   } else {
@@ -59,8 +59,8 @@ export async function POST(req: NextRequest) {
     prediction = scoreWithStatisticalModel(
       bookingId,
       practiceId,
-      booking.patientId ?? null,
-      booking.scheduledAt,
+      booking.patient_id ?? null,
+      booking.scheduled_at,
       features,
       weights
     );

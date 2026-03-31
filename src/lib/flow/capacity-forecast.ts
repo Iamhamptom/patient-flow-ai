@@ -35,7 +35,7 @@ export async function generateDayForecast(
         booking.id,
         practiceId,
         null,
-        booking.scheduledAt,
+        booking.scheduled_at,
         features,
         weights
       );
@@ -116,12 +116,12 @@ export async function generateDayForecast(
 }
 
 function findPeakHour(
-  bookings: { scheduledAt: string }[]
+  bookings: { scheduled_at: string }[]
 ): string | null {
   if (bookings.length === 0) return null;
   const hourCounts: Record<number, number> = {};
   for (const b of bookings) {
-    const hour = new Date(b.scheduledAt).getHours();
+    const hour = new Date(b.scheduled_at).getHours();
     hourCounts[hour] = (hourCounts[hour] ?? 0) + 1;
   }
   const peakHour = Object.entries(hourCounts).sort(

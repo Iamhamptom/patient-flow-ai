@@ -1,28 +1,29 @@
 import { supabaseAdmin, hoTables } from "@/lib/supabase";
 import type { PredictionFeatures } from "./types";
 
-interface BookingRow {
+/** Matches actual ho_bookings columns (snake_case in Supabase) */
+export interface BookingRow {
   id: string;
-  patientName: string;
-  patientPhone: string;
-  patientEmail: string;
+  patient_name: string;
+  patient_phone: string;
+  patient_email: string;
   service: string;
-  scheduledAt: string;
+  scheduled_at: string;
   status: string;
   source: string;
-  leadSource: string;
-  depositPaid: boolean;
-  reminderSentAt: string | null;
-  practiceId: string;
-  createdAt: string;
+  lead_source: string;
+  deposit_paid: boolean;
+  reminder_sent_at: string | null;
+  practice_id: string;
+  created_at: string;
 }
 
 interface PatientRow {
   id: string;
   name: string;
   phone: string;
-  medicalAid: string | null;
-  lastVisit: string | null;
+  medical_aid: string | null;
+  last_visit: string | null;
 }
 
 /**
@@ -36,9 +37,9 @@ export async function extractFeatures(
   // Find patient by phone or email match
   const { data: patients } = await supabaseAdmin
     .from(hoTables.patients)
-    .select("id, name, phone, medicalAid, lastVisit")
-    .eq("practiceId", practiceId)
-    .or(`phone.eq.${booking.patientPhone},email.eq.${booking.patientEmail}`)
+    .select("id, name, phone, medical_aid, last_visit")
+    .eq("practice_id", practiceId)
+    .or(`phone.eq.${booking.patient_phone},email.eq.${booking.patient_email}`)
     .limit(1);
 
   const patient: PatientRow | null = patients?.[0] ?? null;
@@ -46,19 +47,19 @@ export async function extractFeatures(
   // Get all past bookings for this patient (by phone)
   const { data: pastBookings } = await supabaseAdmin
     .from(hoTables.bookings)
-    .select("id, status, scheduledAt")
-    .eq("practiceId", practiceId)
-    .eq("patientPhone", booking.patientPhone)
-    .lt("scheduledAt", booking.scheduledAt)
-    .order("scheduledAt", { ascending: false });
+    .select("id, status, scheduled_at")
+    .eq("practice_id", practiceId)
+    .eq("patient_phone", booking.patient_phone)
+    .lt("scheduled_at", booking.scheduled_at)
+    .order("scheduled_at", { ascending: false });
 
   const history = pastBookings ?? [];
   const totalPast = history.length;
   const noShows = history.filter((b) => b.status === "no_show").length;
   const cancellations = history.filter((b) => b.status === "cancelled").length;
 
-  const scheduledDate = new Date(booking.scheduledAt);
-  const createdDate = new Date(booking.createdAt);
+  const scheduledDate = new Date(booking.scheduled_at);
+  const createdDate = new Date(booking.created_at);
   const leadTimeDays = Math.max(
     0,
     Math.floor(
@@ -66,9 +67,9 @@ export async function extractFeatures(
     )
   );
 
-  const daysSinceLastVisit = patient?.lastVisit
+  const daysSinceLastVisit = patient?.last_visit
     ? Math.floor(
-        (Date.now() - new Date(patient.lastVisit).getTime()) /
+        (Date.now() - new Date(patient.last_visit).getTime()) /
           (1000 * 60 * 60 * 24)
       )
     : null;
@@ -81,14 +82,14 @@ export async function extractFeatures(
     hourOfDay: scheduledDate.getHours(),
     leadTimeDays,
     bookingSource: booking.source || "dashboard",
-    leadSource: booking.leadSource || "unknown",
+    leadSource: booking.lead_source || "unknown",
     serviceType: booking.service || "general",
     isNewPatient: totalPast === 0,
-    depositPaid: booking.depositPaid ?? false,
-    reminderSent: !!booking.reminderSentAt,
-    confirmationReceived: false, // TODO: infer from WhatsApp response
+    depositPaid: booking.deposit_paid ?? false,
+    reminderSent: !!booking.reminder_sent_at,
+    confirmationReceived: false,
     daysSinceLastVisit,
-    hasMedicalAid: !!patient?.medicalAid,
+    hasMedicalAid: !!patient?.medical_aid,
   };
 }
 
@@ -105,9 +106,9 @@ export async function getBookingsForDate(
   const { data, error } = await supabaseAdmin
     .from(hoTables.bookings)
     .select("*")
-    .eq("practiceId", practiceId)
-    .gte("scheduledAt", startOfDay)
-    .lte("scheduledAt", endOfDay)
+    .eq("practice_id", practiceId)
+    .gte("scheduled_at", startOfDay)
+    .lte("scheduled_at", endOfDay)
     .in("status", ["pending", "confirmed"]);
 
   if (error) throw new Error(`Failed to fetch bookings: ${error.message}`);

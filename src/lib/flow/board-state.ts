@@ -1,21 +1,21 @@
 import { supabaseAdmin, hoTables } from "@/lib/supabase";
 import type { FlowSnapshot, FlowBlocker } from "@/lib/prediction/types";
 
+/** Matches actual ho_check_ins columns (snake_case in Supabase) */
 interface CheckInRow {
   id: string;
-  patientName: string;
-  patientId: string | null;
+  patient_name: string;
+  patient_id: string | null;
   status: string;
-  arrivedAt: string;
-  seenAt: string | null;
-  leftAt: string | null;
+  arrived_at: string;
+  seen_at: string | null;
+  left_at: string | null;
   notes: string | null;
-  practiceId: string;
+  practice_id: string;
 }
 
 /**
  * Build real-time flow board state from ho_check_ins table.
- * Returns counts, wait times, and blocker alerts.
  */
 export async function getFlowBoardState(
   practiceId: string
@@ -26,9 +26,9 @@ export async function getFlowBoardState(
   const { data, error } = await supabaseAdmin
     .from(hoTables.checkIns)
     .select("*")
-    .eq("practiceId", practiceId)
-    .gte("arrivedAt", startOfDay)
-    .order("arrivedAt", { ascending: true });
+    .eq("practice_id", practiceId)
+    .gte("arrived_at", startOfDay)
+    .order("arrived_at", { ascending: true });
 
   if (error) throw new Error(`Failed to fetch check-ins: ${error.message}`);
   const checkIns = (data as CheckInRow[]) ?? [];
@@ -42,7 +42,7 @@ export async function getFlowBoardState(
   const noShows = checkIns.filter((c) => c.status === "no_show");
 
   const waitMinutes = waiting.map(
-    (c) => (now - new Date(c.arrivedAt).getTime()) / 60000
+    (c) => (now - new Date(c.arrived_at).getTime()) / 60000
   );
   const avgWait =
     waitMinutes.length > 0
@@ -51,16 +51,14 @@ export async function getFlowBoardState(
   const longestWait =
     waitMinutes.length > 0 ? Math.max(...waitMinutes) : 0;
 
-  // Detect blockers: patients in consultation for too long (>45 min)
-  // or waiting for >30 min
   const blockers: FlowBlocker[] = [];
 
   for (const c of inConsultation) {
-    if (!c.seenAt) continue;
-    const consultMinutes = (now - new Date(c.seenAt).getTime()) / 60000;
+    if (!c.seen_at) continue;
+    const consultMinutes = (now - new Date(c.seen_at).getTime()) / 60000;
     if (consultMinutes > 45) {
       blockers.push({
-        patientName: c.patientName,
+        patientName: c.patient_name,
         reason: `In consultation for ${Math.round(consultMinutes)} minutes (overrun)`,
         minutesBlocked: Math.round(consultMinutes - 45),
       });
@@ -68,10 +66,10 @@ export async function getFlowBoardState(
   }
 
   for (const c of waiting) {
-    const waitMin = (now - new Date(c.arrivedAt).getTime()) / 60000;
+    const waitMin = (now - new Date(c.arrived_at).getTime()) / 60000;
     if (waitMin > 30) {
       blockers.push({
-        patientName: c.patientName,
+        patientName: c.patient_name,
         reason: `Waiting for ${Math.round(waitMin)} minutes`,
         minutesBlocked: Math.round(waitMin),
       });
@@ -100,9 +98,9 @@ export async function getCheckInsByStatus(practiceId: string) {
   const { data, error } = await supabaseAdmin
     .from(hoTables.checkIns)
     .select("*")
-    .eq("practiceId", practiceId)
-    .gte("arrivedAt", startOfDay)
-    .order("arrivedAt", { ascending: true });
+    .eq("practice_id", practiceId)
+    .gte("arrived_at", startOfDay)
+    .order("arrived_at", { ascending: true });
 
   if (error) throw new Error(`Failed to fetch check-ins: ${error.message}`);
   const checkIns = (data as CheckInRow[]) ?? [];

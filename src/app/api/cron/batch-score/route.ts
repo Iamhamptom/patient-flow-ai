@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
         booking.id,
         practiceId,
         null,
-        booking.scheduledAt,
+        booking.scheduled_at,
         features,
         weights
       );
