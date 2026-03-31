@@ -15,6 +15,10 @@
     {
       "path": "/api/cron/workspace-report",
       "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/agent-poll",
+      "schedule": "*/10 * * * *"
     }
   ]
 }

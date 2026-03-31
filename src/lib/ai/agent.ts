@@ -316,39 +316,41 @@ When asked to do something, use your tools to gather data, analyze it, and retur
       description:
         "Send a message to the Health OS agent network via agent_comms table. Use this to report insights, status updates, or escalations to Steinberg and other agents.",
       inputSchema: z.object({
-        messageType: z
+        msgType: z
           .enum([
             "status_update",
             "data_report",
             "alert",
             "task_handoff",
             "sync_request",
+            "directive",
+            "ack",
           ])
           .describe("Type of inter-agent message"),
-        content: z.string().describe("Message content"),
+        subject: z.string().describe("Short subject line"),
+        body: z.string().describe("Message body with details"),
+        payload: z.record(z.string(), z.unknown()).optional().describe("Structured data payload (JSON)"),
         priority: z
           .enum(["low", "normal", "high", "critical"])
           .optional(),
         targetAgent: z
           .string()
           .optional()
-          .describe("Target agent name (steinberg, openclaw, chairman)"),
+          .describe("Target agent (steinberg, openclaw, chairman, all)"),
       }),
-      execute: async ({ messageType, content, priority, targetAgent }) => {
+      execute: async ({ msgType, subject, body, payload, priority, targetAgent }) => {
+        const WORKSPACE_ID = "a1d9788c-55cf-4eb0-a3eb-1697ec9763de";
         const { data, error } = await supabaseAdmin
           .from("agent_comms")
           .insert({
+            workspace_id: WORKSPACE_ID,
             sender: "flowbot",
-            sender_type: "ai_agent",
             recipient: targetAgent ?? "steinberg",
-            message_type: messageType,
-            content,
+            msg_type: msgType,
+            subject,
+            body,
+            payload: payload ?? null,
             priority: priority ?? "normal",
-            status: "unread",
-            metadata: {
-              source: "patient-flow-ai",
-              timestamp: new Date().toISOString(),
-            },
           })
           .select("id")
           .single();
@@ -360,12 +362,13 @@ When asked to do something, use your tools to gather data, analyze it, and retur
 
     read_agent_messages: tool({
       description:
-        "Read messages sent to FlowBot from other Health OS agents.",
+        "Read messages sent to FlowBot from other Health OS agents (Steinberg, OpenClaw, Chairman).",
       inputSchema: z.object({
         limit: z.number().optional().describe("Max messages to read (default 10)"),
         unreadOnly: z.boolean().optional(),
+        fromSender: z.string().optional().describe("Filter by sender (steinberg, openclaw, chairman)"),
       }),
-      execute: async ({ limit, unreadOnly }) => {
+      execute: async ({ limit, unreadOnly, fromSender }) => {
         let query = supabaseAdmin
           .from("agent_comms")
           .select("*")
@@ -374,11 +377,125 @@ When asked to do something, use your tools to gather data, analyze it, and retur
           .limit(limit ?? 10);
 
         if (unreadOnly) {
-          query = query.eq("status", "unread");
+          query = query.is("read_at", null);
+        }
+        if (fromSender) {
+          query = query.eq("sender", fromSender);
         }
 
         const { data } = await query;
+
+        // Mark as read
+        if (data?.length) {
+          const ids = data.filter((m) => !m.read_at).map((m) => m.id);
+          if (ids.length > 0) {
+            await supabaseAdmin
+              .from("agent_comms")
+              .update({ read_at: new Date().toISOString() })
+              .in("id", ids);
+          }
+        }
+
         return { count: data?.length ?? 0, messages: data ?? [] };
+      },
+    }),
+
+    call_steinberg: tool({
+      description:
+        "Call Steinberg (the Chairman AI agent in Visio Workspace) to execute a command. Use this when you need data from the workspace, want to trigger actions across the business, or need to escalate something.",
+      inputSchema: z.object({
+        command: z.string().describe("The task for Steinberg to execute"),
+      }),
+      execute: async ({ command }) => {
+        const GATEWAY_URL = process.env.WORKSPACE_URL ?? "https://visioworkspace-corpo1.vercel.app";
+        const GATEWAY_KEY = process.env.VISIO_GATEWAY_KEY;
+        if (!GATEWAY_KEY) return { error: "VISIO_GATEWAY_KEY not configured" };
+
+        const res = await fetch(`${GATEWAY_URL}/api/gateway`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${GATEWAY_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            command: `[FROM FLOWBOT - Patient Flow AI] ${command}`,
+            agent: "steinberg",
+            mode: "execute",
+          }),
+        });
+
+        if (!res.ok) return { error: `Steinberg returned ${res.status}` };
+        const data = await res.json();
+        return {
+          success: data.success,
+          response: data.response,
+          steps: data.steps,
+          model: data.model_used,
+        };
+      },
+    }),
+
+    generate_report: tool({
+      description:
+        "Generate a structured patient flow report (JSON + markdown) that can be sent to other agents or stored. Use this to create daily summaries, risk reports, or optimization recommendations.",
+      inputSchema: z.object({
+        reportType: z
+          .enum(["daily_summary", "risk_report", "optimization", "capacity_forecast"])
+          .describe("Type of report to generate"),
+        practiceId: z.string(),
+        date: z.string().optional().describe("YYYY-MM-DD, defaults to today"),
+      }),
+      execute: async ({ reportType, practiceId, date }) => {
+        const targetDate = date ?? new Date().toISOString().split("T")[0];
+
+        // Gather all data
+        const bookings = await getBookingsForDate(practiceId, targetDate);
+        const weights = await loadWeights(practiceId);
+
+        const predictions = await Promise.all(
+          bookings.map(async (b) => {
+            const features = await extractFeatures(b, practiceId);
+            return scoreWithStatisticalModel(
+              b.id, practiceId, null, b.scheduled_at, features, weights
+            );
+          })
+        );
+
+        let flowData = null;
+        try {
+          flowData = await getFlowBoardState(practiceId);
+        } catch { /* no check-ins today */ }
+
+        const high = predictions.filter((p) => p.riskScore >= 60);
+        const avgRisk = predictions.length > 0
+          ? Math.round(predictions.reduce((a, b) => a + b.riskScore, 0) / predictions.length)
+          : 0;
+
+        return {
+          reportType,
+          practiceId,
+          date: targetDate,
+          generatedAt: new Date().toISOString(),
+          summary: {
+            totalBookings: bookings.length,
+            predictedNoShows: predictions.filter((p) => p.riskScore >= 50).length,
+            highRiskCount: high.length,
+            avgRiskScore: avgRisk,
+            atRiskRevenue: high.length * 600,
+          },
+          flow: flowData,
+          highRiskBookings: high.map((p) => ({
+            bookingId: p.bookingId,
+            riskScore: p.riskScore,
+            riskLevel: p.riskLevel,
+            explanation: p.explanation,
+          })),
+          predictions: predictions.map((p) => ({
+            bookingId: p.bookingId,
+            riskScore: p.riskScore,
+            riskLevel: p.riskLevel,
+          })),
+        };
       },
     }),
   },
