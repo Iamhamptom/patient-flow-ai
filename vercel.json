@@ -1,0 +1,20 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/morning-forecast",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/batch-score",
+      "schedule": "0 20 * * *"
+    },
+    {
+      "path": "/api/cron/model-retrain",
+      "schedule": "0 3 * * 1"
+    },
+    {
+      "path": "/api/cron/workspace-report",
+      "schedule": "0 7 * * *"
+    }
+  ]
+}
