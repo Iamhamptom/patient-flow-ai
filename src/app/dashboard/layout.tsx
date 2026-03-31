@@ -7,6 +7,7 @@ import {
   Activity,
   BarChart3,
   Bell,
+  Bot,
   CalendarClock,
   ClipboardList,
   LayoutDashboard,
@@ -44,6 +45,11 @@ const navItems = [
     icon: Users,
   },
   { separator: true } as const,
+  {
+    label: "FlowBot Chat",
+    href: "/dashboard/chat",
+    icon: Bot,
+  },
   {
     label: "Analytics",
     href: "/dashboard/analytics",
