@@ -95,10 +95,9 @@ export default function DashboardOverview() {
             })}
           </p>
         </div>
-        <Badge variant="outline" className="border-primary/30 text-primary">
-          <Zap className="h-3 w-3 mr-1" />
-          {anyLoading ? "Loading..." : "LIVE"}
-        </Badge>
+        <span className="text-[10px] font-mono text-muted-foreground tracking-widest uppercase">
+          {anyLoading ? "loading..." : "live"}
+        </span>
       </div>
 
       {/* KPIs */}

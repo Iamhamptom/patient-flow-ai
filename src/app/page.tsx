@@ -1,179 +1,130 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Activity,
-  ArrowRight,
-  BarChart3,
-  Bell,
-  CalendarClock,
-  ShieldCheck,
-  Users,
-  Zap,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="border-b border-border">
-        <div className="max-w-5xl mx-auto flex items-center justify-between px-6 h-14">
-          <div className="flex items-center gap-2">
-            <Activity className="h-5 w-5 text-primary" />
-            <span className="font-semibold tracking-tight">
-              Patient Flow AI
-            </span>
-          </div>
+      <header className="border-b border-border/50">
+        <div className="max-w-4xl mx-auto flex items-center justify-between px-6 h-14">
+          <span className="text-sm font-medium tracking-tight font-mono">
+            patient-flow-ai
+          </span>
           <Link href="/dashboard">
-            <Button size="sm">
-              Dashboard
-              <ArrowRight className="h-3.5 w-3.5 ml-1" />
+            <Button variant="outline" size="sm" className="text-xs">
+              Open Dashboard
             </Button>
           </Link>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="max-w-5xl mx-auto px-6 py-24 text-center">
-        <Badge
-          variant="outline"
-          className="mb-4 border-primary/30 text-primary"
-        >
-          <Zap className="h-3 w-3 mr-1" />
-          AI-Powered Healthcare Operations
-        </Badge>
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight leading-tight">
-          Predict No-Shows.
-          <br />
-          Optimize Schedules.
-          <br />
-          <span className="text-primary">Recover Lost Revenue.</span>
-        </h1>
-        <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-          Patient Flow AI uses machine learning to predict which patients
-          won't show up, automatically fills gaps from your waitlist, and
-          optimizes doctor schedules — saving R792K/year per doctor.
-        </p>
-        <div className="mt-8 flex items-center justify-center gap-3">
-          <Link href="/dashboard">
-            <Button size="lg">
-              Open Dashboard
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-          </Link>
+      <section className="flex-1 flex items-center">
+        <div className="max-w-4xl mx-auto px-6 py-32">
+          <p className="text-xs font-mono text-muted-foreground tracking-widest uppercase mb-6">
+            Predictive Healthcare Operations
+          </p>
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.1] max-w-3xl">
+            Know which patients
+            <br />
+            won't show up.
+          </h1>
+          <p className="mt-6 text-lg text-muted-foreground max-w-xl leading-relaxed">
+            AI that predicts no-shows, optimizes schedules, and recovers
+            lost revenue for South African healthcare practices.
+          </p>
+          <div className="mt-10 flex items-center gap-4">
+            <Link href="/dashboard">
+              <Button size="lg" className="px-8">
+                Dashboard
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </Link>
+            <Link href="/dashboard/chat">
+              <Button variant="outline" size="lg" className="px-8">
+                Talk to FlowBot
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="border-t border-border py-16">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="grid gap-8 md:grid-cols-3">
-            <div className="space-y-3">
-              <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center">
-                <BarChart3 className="h-5 w-5 text-primary" />
-              </div>
-              <h3 className="font-semibold">No-Show Prediction</h3>
-              <p className="text-sm text-muted-foreground">
-                AI scores every booking on 15 features — history, day of week,
-                deposit status, source. Flags high-risk patients before they
-                miss their slot.
+      {/* Numbers */}
+      <section className="border-t border-border/50">
+        <div className="max-w-4xl mx-auto px-6 py-20">
+          <div className="grid grid-cols-3 gap-12">
+            <div>
+              <p className="text-3xl font-bold font-mono">R792K</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Lost per doctor/year from no-shows
               </p>
             </div>
-            <div className="space-y-3">
-              <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center">
-                <CalendarClock className="h-5 w-5 text-primary" />
-              </div>
-              <h3 className="font-semibold">Schedule Optimization</h3>
-              <p className="text-sm text-muted-foreground">
-                Analyzes each doctor's consultation patterns. Complex cases in
-                the morning, follow-ups afternoon, buffer slots for overruns.
+            <div>
+              <p className="text-3xl font-bold font-mono">90%</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Prediction accuracy on first retrain
               </p>
             </div>
-            <div className="space-y-3">
-              <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center">
-                <Users className="h-5 w-5 text-primary" />
-              </div>
-              <h3 className="font-semibold">Waitlist Auto-Fill</h3>
-              <p className="text-sm text-muted-foreground">
-                When a no-show is predicted, the system matches waitlist
-                patients to fill the gap — recovering revenue automatically.
-              </p>
-            </div>
-            <div className="space-y-3">
-              <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center">
-                <Bell className="h-5 w-5 text-primary" />
-              </div>
-              <h3 className="font-semibold">Smart Reminders</h3>
-              <p className="text-sm text-muted-foreground">
-                High-risk patients get extra WhatsApp/SMS reminders. Low-risk
-                patients aren't bothered.
-              </p>
-            </div>
-            <div className="space-y-3">
-              <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center">
-                <Activity className="h-5 w-5 text-primary" />
-              </div>
-              <h3 className="font-semibold">Real-Time Flow Board</h3>
-              <p className="text-sm text-muted-foreground">
-                Kanban view of patient flow: waiting, in consultation, done.
-                Blocker detection alerts when patients are stuck.
-              </p>
-            </div>
-            <div className="space-y-3">
-              <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center">
-                <ShieldCheck className="h-5 w-5 text-primary" />
-              </div>
-              <h3 className="font-semibold">POPIA Compliant</h3>
-              <p className="text-sm text-muted-foreground">
-                Full audit trail. Patient data in SA-hosted Supabase. Consent
-                tracking built in.
+            <div>
+              <p className="text-3xl font-bold font-mono">15</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Features per booking scored in &lt;50ms
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ROI Section */}
-      <section className="border-t border-border py-16 bg-card">
-        <div className="max-w-5xl mx-auto px-6 text-center">
-          <h2 className="text-2xl font-bold tracking-tight mb-8">
-            The Numbers Speak
-          </h2>
-          <div className="grid gap-8 md:grid-cols-3">
-            <div>
-              <p className="text-3xl font-bold font-mono text-primary">
-                R792K
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Lost per doctor/year from no-shows (at R600/consult)
-              </p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold font-mono text-primary">40%</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Reduction in no-shows with prediction + smart reminders
-              </p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold font-mono text-primary">
-                R316K
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Recovered per doctor per year
-              </p>
-            </div>
+      {/* Capabilities — text only, no icons */}
+      <section className="border-t border-border/50">
+        <div className="max-w-4xl mx-auto px-6 py-20">
+          <div className="grid md:grid-cols-2 gap-x-16 gap-y-10">
+            {[
+              {
+                title: "No-Show Prediction",
+                desc: "Dual-model engine — Gemini for precision, logistic regression for batch. Scores 15 features from booking history, deposit status, and patient behavior.",
+              },
+              {
+                title: "Schedule Optimization",
+                desc: "Learns each doctor's consultation patterns. Places complex cases in mornings, stacks follow-ups in afternoons, inserts buffers where overruns are predicted.",
+              },
+              {
+                title: "Real-Time Flow Board",
+                desc: "Live Kanban of patient movement through the clinic. Auto-detects blockers — patients waiting too long, consultations overrunning.",
+              },
+              {
+                title: "Waitlist Auto-Fill",
+                desc: "When a no-show is predicted, matches waitlist patients to fill the gap before the slot goes empty.",
+              },
+              {
+                title: "Self-Learning",
+                desc: "Records actual outcomes. Retrains weekly. Adjusts feature weights from correlations. Gets more accurate with every booking.",
+              },
+              {
+                title: "Agent Network",
+                desc: "FlowBot reports to the Health OS agent network. Steinberg can trigger flow analysis, scoring, and capacity forecasts remotely.",
+              },
+            ].map((item) => (
+              <div key={item.title}>
+                <h3 className="text-sm font-medium">{item.title}</h3>
+                <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
+                  {item.desc}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border py-6">
-        <div className="max-w-5xl mx-auto px-6 flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">
-            VisioCorp Health Division — Patient Flow AI v0.1.0
+      <footer className="border-t border-border/50 py-6">
+        <div className="max-w-4xl mx-auto px-6 flex items-center justify-between">
+          <p className="text-xs text-muted-foreground font-mono">
+            patient-flow-ai v0.2.0
           </p>
           <p className="text-xs text-muted-foreground">
-            Built for South African healthcare
+            VisioCorp Health Division
           </p>
         </div>
       </footer>
