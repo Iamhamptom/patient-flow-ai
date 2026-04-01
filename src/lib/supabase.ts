@@ -63,7 +63,7 @@ export const tables = {
   modelAccuracy: "pf_model_accuracy",
 } as const;
 
-/** HealthOps tables we READ from (ho_ prefix, shared Supabase) */
+/** HealthOps tables we READ/WRITE (ho_ prefix, shared Supabase) */
 export const hoTables = {
   practices: "ho_practices",
   patients: "ho_patients",
@@ -73,4 +73,16 @@ export const hoTables = {
   users: "ho_users",
   vitals: "ho_vitals",
   medicalRecords: "ho_medical_records",
+  conversations: "ho_conversations",
+  messages: "ho_messages",
+  recallItems: "ho_recall_items",
+  referrals: "ho_referrals",
+  dailyTasks: "ho_daily_tasks",
+  invoices: "ho_invoices",
+  allergies: "ho_allergies",
+  medications: "ho_medications",
+  bridgeMessages: "ho_bridge_messages",
+  bridgeAdvisories: "ho_bridge_advisories",
+  clinics: "ho_clinics",
+  clinicDirectory: "ho_clinic_directory",
 } as const;

@@ -18,10 +18,12 @@ import {
 } from "lucide-react";
 
 const PROMPTS = [
-  "Score all bookings for today",
+  "Give me a morning briefing",
+  "Who's at risk of no-showing today?",
+  "Show me overdue patient recalls",
+  "What referrals are pending?",
   "Check the patient flow board",
-  "Who's at risk of no-showing?",
-  "Generate a capacity forecast",
+  "Book Thandi Mkhize for a GP consultation tomorrow at 9am",
 ];
 
 export function FlowBotWidget() {
@@ -115,8 +117,8 @@ export function FlowBotWidget() {
                 <Sparkles className="h-8 w-8 mx-auto text-muted-foreground/30" />
                 <p className="text-sm font-medium">FlowBot</p>
                 <p className="text-xs text-muted-foreground max-w-[280px] mx-auto">
-                  AI agent with 13 tools. Score bookings, check flow,
-                  manage waitlists, optimize schedules — all conversationally.
+                  Your daily ops agent. Manage bookings, patients, comms,
+                  recalls, referrals, CareOn bridge data — all conversationally.
                 </p>
               </div>
               <div className="space-y-1.5">
