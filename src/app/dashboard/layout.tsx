@@ -17,6 +17,7 @@ import {
   Users,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { FlowBotWidget } from "@/components/flowbot-chat";
 
 const navItems = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -99,6 +100,9 @@ export default function DashboardLayout({
       <main className="flex-1 overflow-y-auto bg-background">
         <div className="max-w-6xl mx-auto p-6">{children}</div>
       </main>
+
+      {/* FlowBot — always accessible */}
+      <FlowBotWidget />
     </div>
   );
 }
