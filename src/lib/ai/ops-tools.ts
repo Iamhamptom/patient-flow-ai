@@ -7,6 +7,8 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { supabaseAdmin, hoTables } from "@/lib/supabase";
+import { sendWhatsApp, sendWhatsAppWithButtons, sendWithFallback, sendSMS, broadcastWhatsApp } from "@/lib/twilio";
+import { sendEmail, appointmentConfirmationEmail } from "@/lib/resend";
 
 export function createOpsTools() {
   return {
@@ -186,37 +188,143 @@ export function createOpsTools() {
 
     // ━━━━━━━━━━━━━━━━━━━━ COMMUNICATIONS PIPELINE ━━━━━━━━━━━━━━━━━━━━
 
-    send_notification: tool({
+    send_whatsapp: tool({
       description:
-        "Send a WhatsApp, SMS, or email notification to a patient. Use for reminders, follow-ups, recall messages, or custom communications.",
+        "Send a WhatsApp message to a patient via Twilio. Use for reminders, confirmations, follow-ups, recall outreach, or any patient communication.",
       inputSchema: z.object({
         practiceId: z.string(),
-        type: z.enum(["whatsapp", "sms", "email"]),
-        recipient: z.string().describe("Phone number or email address"),
+        to: z.string().describe("Patient phone number with country code e.g. +27821234567"),
+        message: z.string().describe("Message text (max 1600 chars for WhatsApp)"),
         patientName: z.string(),
-        subject: z.string(),
-        message: z.string(),
-        template: z.string().optional().describe("reminder_24h, reminder_48h, recall, followup, custom"),
       }),
-      execute: async ({ practiceId, type, recipient, patientName, subject, message, template }) => {
-        const { data, error } = await supabaseAdmin
-          .from(hoTables.notifications)
-          .insert({
-            type,
-            recipient,
+      execute: async ({ practiceId, to, message, patientName }) => {
+        try {
+          const result = await sendWhatsApp(to, message);
+          // Log to notifications table
+          await supabaseAdmin.from(hoTables.notifications).insert({
+            type: "whatsapp",
+            recipient: to,
             patient_name: patientName,
-            subject,
+            subject: "WhatsApp message",
             message,
-            status: "queued",
-            template: template ?? "custom",
+            status: "sent",
+            template: "custom",
             practice_id: practiceId,
             sent_at: new Date().toISOString(),
-          })
-          .select("id")
-          .single();
+          });
+          return { sent: true, channel: "whatsapp", sid: result.sid, to };
+        } catch (err) {
+          return { error: err instanceof Error ? err.message : "WhatsApp send failed" };
+        }
+      },
+    }),
 
-        if (error) return { error: error.message };
-        return { sent: true, notificationId: data.id, channel: type, to: recipient };
+    send_sms: tool({
+      description: "Send an SMS to a patient. Use as fallback when WhatsApp fails or for simple alerts.",
+      inputSchema: z.object({
+        practiceId: z.string(),
+        to: z.string().describe("Phone number with country code"),
+        message: z.string(),
+        patientName: z.string(),
+      }),
+      execute: async ({ practiceId, to, message, patientName }) => {
+        try {
+          const result = await sendSMS(to, message);
+          await supabaseAdmin.from(hoTables.notifications).insert({
+            type: "sms",
+            recipient: to,
+            patient_name: patientName,
+            subject: "SMS",
+            message,
+            status: "sent",
+            template: "custom",
+            practice_id: practiceId,
+            sent_at: new Date().toISOString(),
+          });
+          return { sent: true, channel: "sms", sid: result.sid, to };
+        } catch (err) {
+          return { error: err instanceof Error ? err.message : "SMS send failed" };
+        }
+      },
+    }),
+
+    send_message_with_fallback: tool({
+      description:
+        "Send a message via WhatsApp first, falling back to SMS if WhatsApp fails. Best option for critical communications (reminders, confirmations).",
+      inputSchema: z.object({
+        practiceId: z.string(),
+        to: z.string(),
+        message: z.string(),
+        patientName: z.string(),
+      }),
+      execute: async ({ practiceId, to, message, patientName }) => {
+        try {
+          const result = await sendWithFallback(to, message);
+          await supabaseAdmin.from(hoTables.notifications).insert({
+            type: result.channel,
+            recipient: to,
+            patient_name: patientName,
+            subject: `${result.channel} message`,
+            message,
+            status: "sent",
+            template: "custom",
+            practice_id: practiceId,
+            sent_at: new Date().toISOString(),
+          });
+          return { sent: true, channel: result.channel, sid: result.sid, to };
+        } catch (err) {
+          return { error: err instanceof Error ? err.message : "Both channels failed" };
+        }
+      },
+    }),
+
+    broadcast_whatsapp: tool({
+      description:
+        "Broadcast a WhatsApp message to multiple patients. Use for bulk recalls, campaign messages, or practice announcements. Max 50 recipients per call.",
+      inputSchema: z.object({
+        practiceId: z.string(),
+        recipients: z.array(z.string()).describe("Array of phone numbers"),
+        message: z.string(),
+      }),
+      execute: async ({ practiceId, recipients, message }) => {
+        if (recipients.length > 50) {
+          return { error: "Max 50 recipients per broadcast" };
+        }
+        const results = await broadcastWhatsApp(recipients, message);
+        const sent = results.filter((r) => r.sid).length;
+        const failed = results.filter((r) => r.error).length;
+        return { sent, failed, total: recipients.length, results };
+      },
+    }),
+
+    send_email: tool({
+      description:
+        "Send an email to a patient via Resend. Use for appointment confirmations, invoices, follow-up reports, or formal communications.",
+      inputSchema: z.object({
+        practiceId: z.string(),
+        to: z.string().describe("Patient email address"),
+        subject: z.string(),
+        html: z.string().describe("HTML email body"),
+        patientName: z.string(),
+      }),
+      execute: async ({ practiceId, to, subject, html, patientName }) => {
+        try {
+          const result = await sendEmail({ to, subject, html });
+          await supabaseAdmin.from(hoTables.notifications).insert({
+            type: "email",
+            recipient: to,
+            patient_name: patientName,
+            subject,
+            message: subject,
+            status: "sent",
+            template: "custom",
+            practice_id: practiceId,
+            sent_at: new Date().toISOString(),
+          });
+          return { sent: true, channel: "email", to, ...result };
+        } catch (err) {
+          return { error: err instanceof Error ? err.message : "Email send failed" };
+        }
       },
     }),
 
