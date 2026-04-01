@@ -8,13 +8,17 @@ import {
   BarChart3,
   Bell,
   Bot,
+  Calendar,
+  CalendarCheck,
   CalendarClock,
   ClipboardList,
   LayoutDashboard,
   LogOut,
   MessageSquare,
+  PlugZap,
   Settings,
   Stethoscope,
+  UserCheck,
   Users,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -33,6 +37,13 @@ const navItems = [
   { label: "Reminders", href: "/dashboard/reminders", icon: Bell },
   { label: "Doctors", href: "/dashboard/doctors", icon: Stethoscope },
   { label: "Settings", href: "/dashboard/settings", icon: Settings },
+  { separator: true } as const,
+  { label: "Bookings", href: "/dashboard/bookings", icon: CalendarCheck },
+  { label: "Check-In", href: "/dashboard/checkin", icon: UserCheck },
+  { label: "Daily Tasks", href: "/dashboard/daily", icon: ClipboardList },
+  { label: "Calendar", href: "/dashboard/calendar", icon: Calendar },
+  { label: "Notifications", href: "/dashboard/notifications", icon: Bell },
+  { label: "Connections", href: "/dashboard/connections", icon: PlugZap },
 ];
 
 export default function DashboardLayout({

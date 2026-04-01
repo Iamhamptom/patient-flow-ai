@@ -13,6 +13,7 @@ import { analyzeDoctorPatterns } from "@/lib/schedule/pattern-analyzer";
 import { WORKSPACE_ID } from "@/lib/constants";
 import { createOpsTools } from "./ops-tools";
 import { createEngagementTools } from "./engagement-tools";
+import { createFrontDeskTools } from "./frontdesk-tools";
 
 /**
  * Patient Flow AI Agent — "FlowBot"
@@ -613,5 +614,10 @@ Patient Flow AI is the unified product that merges scheduling intelligence with 
     // Sequences, campaigns, email triage, chronic care gaps,
     // population health, engagement dashboard
     ...createEngagementTools(),
+
+    // ━━━━━━━━━━━━━━━━━━━━ FRONT DESK TOOLS ━━━━━━━━━━━━━━━━━━━━
+    // Medical aid verification, calendar slots, bulk check-in import,
+    // integration status, patient registration
+    ...createFrontDeskTools(),
   },
 });
