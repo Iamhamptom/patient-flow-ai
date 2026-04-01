@@ -15,6 +15,7 @@ import { createOpsTools } from "./ops-tools";
 import { createEngagementTools } from "./engagement-tools";
 import { createFrontDeskTools } from "./frontdesk-tools";
 import { createAnalyticsTools } from "./analytics-tools";
+import { createClinicalTools } from "./clinical-tools";
 
 /**
  * Patient Flow AI Agent — "FlowBot"
@@ -624,5 +625,10 @@ Patient Flow AI is the unified product that merges scheduling intelligence with 
     // ━━━━━━━━━━━━━━━━━━━━ ANALYTICS & FEEDBACK ━━━━━━━━━━━━━━━━━━━━
     // User feedback, agent performance analytics, learning log
     ...createAnalyticsTools(),
+
+    // ━━━━━━━━━━━━━━━━━━━━ CLINICAL INTELLIGENCE ━━━━━━━━━━━━━━━━━━━━
+    // SA healthcare KB (300MB), ICD-10 codes, medicines, triage,
+    // billing assist, HL7v2 CareOn bridge translator
+    ...createClinicalTools(),
   },
 });
