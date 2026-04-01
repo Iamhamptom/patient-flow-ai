@@ -14,6 +14,7 @@ import { WORKSPACE_ID } from "@/lib/constants";
 import { createOpsTools } from "./ops-tools";
 import { createEngagementTools } from "./engagement-tools";
 import { createFrontDeskTools } from "./frontdesk-tools";
+import { createAnalyticsTools } from "./analytics-tools";
 
 /**
  * Patient Flow AI Agent — "FlowBot"
@@ -619,5 +620,9 @@ Patient Flow AI is the unified product that merges scheduling intelligence with 
     // Medical aid verification, calendar slots, bulk check-in import,
     // integration status, patient registration
     ...createFrontDeskTools(),
+
+    // ━━━━━━━━━━━━━━━━━━━━ ANALYTICS & FEEDBACK ━━━━━━━━━━━━━━━━━━━━
+    // User feedback, agent performance analytics, learning log
+    ...createAnalyticsTools(),
   },
 });
