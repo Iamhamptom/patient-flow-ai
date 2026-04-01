@@ -11,6 +11,7 @@ import {
   CalendarClock,
   ClipboardList,
   LayoutDashboard,
+  LogOut,
   Settings,
   Stethoscope,
   Users,
@@ -77,8 +78,18 @@ export default function DashboardLayout({
             })}
           </nav>
         </ScrollArea>
-        <div className="border-t border-border/50 px-4 py-3">
-          <p className="text-[10px] text-muted-foreground/50 font-mono">
+        <div className="border-t border-border/50 px-3 py-3 space-y-2">
+          <button
+            onClick={async () => {
+              await fetch("/api/auth/logout", { method: "POST" });
+              window.location.href = "/login";
+            }}
+            className="flex items-center gap-2 text-[10px] text-muted-foreground hover:text-foreground transition-colors w-full"
+          >
+            <LogOut className="h-3 w-3" />
+            Sign out
+          </button>
+          <p className="text-[10px] text-muted-foreground/40 font-mono">
             v0.2.0
           </p>
         </div>
