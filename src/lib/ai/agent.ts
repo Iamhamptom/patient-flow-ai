@@ -12,6 +12,7 @@ import { generateDayForecast } from "@/lib/flow/capacity-forecast";
 import { analyzeDoctorPatterns } from "@/lib/schedule/pattern-analyzer";
 import { WORKSPACE_ID } from "@/lib/constants";
 import { createOpsTools } from "./ops-tools";
+import { createEngagementTools } from "./engagement-tools";
 
 /**
  * Patient Flow AI Agent — "FlowBot"
@@ -534,5 +535,10 @@ You are the daily ops hub. Practice staff open you every morning and use you thr
     // Booking management, patient lookup, comms, recalls, referrals,
     // daily tasks, CareOn bridge, check-in management, morning briefing
     ...createOpsTools(),
+
+    // ━━━━━━━━━━━━━━━━━━━━ ENGAGEMENT TOOLS ━━━━━━━━━━━━━━━━━━━━
+    // Sequences, campaigns, email triage, chronic care gaps,
+    // population health, engagement dashboard
+    ...createEngagementTools(),
   },
 });
