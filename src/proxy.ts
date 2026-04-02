@@ -16,8 +16,11 @@ export function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Dashboard and API routes require session cookie
-  if (pathname.startsWith("/dashboard") || pathname.startsWith("/api/")) {
+  // Demo mode — skip auth for Netcare evaluation
+  const isDemo = process.env.DEMO_MODE === "true";
+
+  // Dashboard and API routes require session cookie (unless demo mode)
+  if (!isDemo && (pathname.startsWith("/dashboard") || pathname.startsWith("/api/"))) {
     const session = req.cookies.get("pf_session");
     if (!session?.value) {
       if (pathname.startsWith("/api/")) {
