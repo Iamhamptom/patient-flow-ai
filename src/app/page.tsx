@@ -24,11 +24,13 @@ function FadeIn({ children, className = "", delay = 0 }: { children: React.React
   );
 }
 
-const fadeUp = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const fadeUp: any = {
   hidden: { opacity: 0, y: 30 },
   visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.08, duration: 0.6, ease: [0.21, 0.47, 0.32, 0.98] } }),
 };
-const stagger = { visible: { transition: { staggerChildren: 0.06 } } };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const stagger: any = { visible: { transition: { staggerChildren: 0.06 } } };
 
 export default function LandingPage() {
   return (
