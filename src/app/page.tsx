@@ -104,13 +104,16 @@ export default function LandingPage() {
               { value: "R2.4B", label: "Annual No-Show Cost (SA)", icon: BarChart3 },
               { value: "R480-1.2K", label: "Lost Per Empty Slot", icon: Clock },
               { value: "20-35min", label: "Average Wait Time", icon: Users },
-            ].map((s, i) => (
+            ].map((s, i) => {
+              const SIcon = s.icon;
+              return (
               <motion.div key={s.label} variants={fadeUp} custom={i} className="rounded-xl ring-1 ring-border bg-card p-5 text-center">
-                <s.icon className="w-5 h-5 text-muted-foreground mx-auto mb-3" />
+                <SIcon className="w-5 h-5 text-muted-foreground mx-auto mb-3" />
                 <p className="text-2xl sm:text-3xl font-bold">{s.value}</p>
                 <p className="text-[10px] font-mono text-muted-foreground mt-1 uppercase tracking-wider">{s.label}</p>
               </motion.div>
-            ))}
+              );
+            })}
           </motion.div>
         </div>
       </section>
@@ -133,17 +136,20 @@ export default function LandingPage() {
               { icon: Activity, title: "Daily Briefings", desc: "Morning intelligence: today's schedule, risk patients, predicted gaps, recommended overbookings." },
               { icon: Heart, title: "Engagement Tracking", desc: "Patient engagement scores. Recall compliance. Follow-up completion rates. Chronic care adherence." },
               { icon: Zap, title: "Doctor Performance", desc: "Consultation duration trends. Patient throughput. On-time rates. Utilization optimization per provider." },
-            ].map((f, i) => (
+            ].map((f, i) => {
+              const FIcon = f.icon;
+              return (
               <FadeIn key={f.title} delay={i * 0.04}>
                 <div className="rounded-xl ring-1 ring-border bg-card px-5 py-4 hover:ring-blue-500/20 transition group h-full">
                   <div className="flex items-center gap-2 mb-2">
-                    <f.icon className="w-4 h-4 text-muted-foreground group-hover:text-blue-400 transition" />
+                    <FIcon className="w-4 h-4 text-muted-foreground group-hover:text-blue-400 transition" />
                     <span className="text-[13px] font-semibold">{f.title}</span>
                   </div>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">{f.desc}</p>
                 </div>
               </FadeIn>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
